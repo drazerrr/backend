@@ -152,10 +152,9 @@ const logoutUser = asyncHandler(async(req, res) => {
     console.log(req.user._id);
     const data = await User.findByIdAndUpdate(req.user._id, {
         $set: {
-            refreshToken: ""
+            refreshToken: 1 //for deleting the refresh token
         }
     }, {new: true})
-    console.log(data);
 
     const options = {
         httpOnly: true,
