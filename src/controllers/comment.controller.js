@@ -83,6 +83,9 @@ const deleteComment = asyncHandler(async (req, res) => {
     if(req.user?._id.toString()!== commentToDelete.owner.toString()) {
         throw new ApiError(401, "You are not authorized to delete this comment")
     }
+
+    await Comment.findByIdAndDelete(commentId)
+
     return res
     .status(200)
     .json(
