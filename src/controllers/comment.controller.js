@@ -10,6 +10,37 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const {videoId} = req.params
     const {page = 1, limit = 10} = req.query
 
+    const options = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        sort: {
+            createdAt: -1
+        }   
+    }
+
+    const comments = await Comment.aggregatePaginate(
+        [
+            {
+                $match: {
+                    video: new mongoose.Types.ObjectId(videoId)
+                }
+            }
+        ],
+        options
+    )
+    if(!comments) {
+        throw new ApiError(404, "Comments not found")
+    }
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            comments,
+            "Comments found successfully"
+        )
+    )
+
 })
 
 const addComment = asyncHandler(async (req, res) => {
@@ -83,7 +114,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     if(req.user?._id.toString()!== commentToDelete.owner.toString()) {
         throw new ApiError(401, "You are not authorized to delete this comment")
     }
-
+    await Likes.deleteMany({ comment: commentId })
     await Comment.findByIdAndDelete(commentId)
 
     return res
